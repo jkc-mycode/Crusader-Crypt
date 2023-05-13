@@ -1,2 +1,2 @@
 # SoulLike
-2023 KIT Capstone Project: Loglike Game (UE5.1.1)
+2023 KIT Capstone Project: Roguelike Game (UE5.1.1)
