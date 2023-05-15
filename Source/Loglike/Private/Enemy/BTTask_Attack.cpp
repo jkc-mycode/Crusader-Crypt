@@ -17,9 +17,12 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	Monster = Cast<AMeleeMonsterBase>(OwnerComp.GetAIOwner()->GetPawn());
 	if (nullptr == Monster)
 		return EBTNodeResult::Failed;
-
+	if(Monster->GetIsAttacking())
+		return EBTNodeResult::Succeeded;
 	//공격 시작
 	Monster->ComboAttack();
 	return EBTNodeResult::Succeeded;
 }
+
+
 

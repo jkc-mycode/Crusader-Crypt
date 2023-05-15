@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,10 +8,19 @@
 #include "LoglikeCharacter.generated.h"
 
 
-//HP Ã¼Å©¿ë µ¨¸®°ÔÀÌÆ®
+//HP ì²´í¬ìš© ë¸ë¦¬ê²Œì´íŠ¸
 //DECLARE_MULTICAST_DELEGATE(FOnHPIsZeroDelegate);
-//HP º¯È­ Ã¼Å©¿ë µ¨¸®°ÔÀÌÆ®
+//HP ë³€í™” ì²´í¬ìš© ë¸ë¦¬ê²Œì´íŠ¸
 //DECLARE_MULTICAST_DELEGATE(FOnHPChangedDelegate);
+
+UENUM(BlueprintType)
+enum class ECharacterState : uint8
+{
+	PREINIT,
+	LOADING,
+	READY,
+	DEAD
+};
 
 UCLASS(config = Game, meta = (BlueprintSpawnableComponent))
 class ALoglikeCharacter : public ACharacter
@@ -38,6 +47,10 @@ class ALoglikeCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/** InteractDoor*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InteractDoorActon;
+
 
 public:
 	ALoglikeCharacter();
@@ -47,6 +60,10 @@ public:
 
 	//virtual void Tick(float DeltaTime) override;
 	virtual void PostInitializeComponents() override;
+
+	//ìºë¦­í„° ìŠ¤í…Œì´íŠ¸ ì„¤ì •
+	void SetCharacterState(ECharacterState NewState);
+	ECharacterState GetCharacterState() const;
 
 
 protected:
@@ -71,140 +88,163 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	//°ø°İ ¾Ö´Ô ½ÇÇà ÇÔ¼ö
+	//ê³µê²© ì• ë‹˜ ì‹¤í–‰ í•¨ìˆ˜
 	void Attack();
-	//´åÁö ¾Ö´Ô ½ÇÇà ÇÔ¼ö
+	//ë‹·ì§€ ì• ë‹˜ ì‹¤í–‰ í•¨ìˆ˜
 	void Dodge();
-	//ÆĞ¸µ ¾Ö´Ô ½ÇÇà ÇÔ¼ö
+	//íŒ¨ë§ ì• ë‹˜ ì‹¤í–‰ í•¨ìˆ˜
 	void Parrying();
-	//¹Ş´Â µ¥¹ÌÁö Ã³¸® ÇÔ¼ö
+	//ë°›ëŠ” ë°ë¯¸ì§€ ì²˜ë¦¬ í•¨ìˆ˜
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	//HUD¿¡¼­ÀÇ HP Bar ºñÀ²À» °è»êÇÏ´Â ÇÔ¼ö
-	float GetHPRatio();
+	//HUDì—ì„œì˜ HP Bar ë¹„ìœ¨ì„ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜
+	//float GetHPRatio();
 
-	//°¢ HP µ¨¸®°ÔÀÌÆ®(µ¨¸®°ÔÀÌÆ®´Â ¹ÙÀÎµùµÈ ÇÔ¼öµéÀ» µ¿½Ã¿¡ ½ÇÇà ½ÃÄÑÁÜ)
+	//ë¬´ê¸° ì¥ì°©ì´ ê°€ëŠ¥í•œì§€ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+	bool CanSetWeapon();
+	//ë¬´ê¸° ì¥ì°© í•¨ìˆ˜
+	void SetWeapon(class AABWeapon* NewWeapon);
+
+	//ê° HP ë¸ë¦¬ê²Œì´íŠ¸(ë¸ë¦¬ê²Œì´íŠ¸ëŠ” ë°”ì¸ë”©ëœ í•¨ìˆ˜ë“¤ì„ ë™ì‹œì— ì‹¤í–‰ ì‹œì¼œì¤Œ)
 	//FOnHPIsZeroDelegate OnHPIsZero;
 	//FOnHPChangedDelegate OnHPChanged;
 
-	//ºí·çÇÁ¸°Æ®¿¡¼­ ÇöÀç Ã¼·ÂÀ» °¡Á®°¥ ¶§ »ç¿ëÇÒ ÇÔ¼ö
+	//ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í˜„ì¬ ì²´ë ¥ì„ ê°€ì ¸ê°ˆ ë•Œ ì‚¬ìš©í•  í•¨ìˆ˜
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	float GetHealth();
-	//ºí·çÇÁ¸°Æ®¿¡¼­ Ä³¸¯ÅÍ °ø°İ·ÂÀ» °¡Á®°¥ ¶§ »ç¿ëÇÒ ÇÔ¼ö
+	//ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ìºë¦­í„° ê³µê²©ë ¥ì„ ê°€ì ¸ê°ˆ ë•Œ ì‚¬ìš©í•  í•¨ìˆ˜
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	float GetCharacterDamage();
-	//ºí·çÇÁ¸°Æ®¿¡¼­ Ä³¸¯ÅÍ Çà¿îÀ» °¡Á®°¥ ¶§ »ç¿ëÇÒ ÇÔ¼ö
+	//ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ìºë¦­í„° í–‰ìš´ì„ ê°€ì ¸ê°ˆ ë•Œ ì‚¬ìš©í•  í•¨ìˆ˜
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	float GetCharacterLuck();
-	//ºí·çÇÁ¸°Æ®¿¡¼­ Ä³¸¯ÅÍ Çà¿îÀ» °¡Á®°¥ ¶§ »ç¿ëÇÒ ÇÔ¼ö
+	//ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ìºë¦­í„° í–‰ìš´ì„ ê°€ì ¸ê°ˆ ë•Œ ì‚¬ìš©í•  í•¨ìˆ˜
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	int GetCharacterToken();
 
 
 private:
-	//°ø°İ ¸ùÅ¸ÁÖ ³¡ Ã¼Å© ÇÔ¼ö
+	//ê³µê²© ëª½íƒ€ì£¼ ë ì²´í¬ í•¨ìˆ˜
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	//ÄŞº¸ °ø°İ ½ÃÀÛ »óÅÂ Ã¼Å© ÇÔ¼ö
+	//ì½¤ë³´ ê³µê²© ì‹œì‘ ìƒíƒœ ì²´í¬ í•¨ìˆ˜
 	void AttackStartComboState();
-	//ÄŞº¸ °ø°İ ³¡ »óÅÂ Ã¼Å© ÇÔ¼ö
+	//ì½¤ë³´ ê³µê²© ë ìƒíƒœ ì²´í¬ í•¨ìˆ˜
 	void AttackEndComboState();
-	//°ø°İ Äİ¸®ÀüÀ» ÄÑ¼­ °ø°İÇß´ÂÁö Ã¼Å©ÇÏ´Â ÇÔ¼ö
+	//ê³µê²© ì½œë¦¬ì „ì„ ì¼œì„œ ê³µê²©í–ˆëŠ”ì§€ ì²´í¬í•˜ëŠ” í•¨ìˆ˜
 	void AttackCheck();
 
-	//´åÁö ¸ùÅ¸ÁÖ ³¡ Ã¼Å© ÇÔ¼ö
+	//ë‹·ì§€ ëª½íƒ€ì£¼ ë ì²´í¬ í•¨ìˆ˜
 	UFUNCTION()
 	void OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-	//ÆĞ¸µ ¸ùÅ¸ÁÖ ³¡ Ã¼Å© ÇÔ¼ö
+	//íŒ¨ë§ ëª½íƒ€ì£¼ ë ì²´í¬ í•¨ìˆ˜
 	UFUNCTION()
 	void OnParryingMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	
-	//´åÁö¿ë µô·¹ÀÌ ÇÔ¼ö
+	//ë‹·ì§€ìš© ë”œë ˆì´ í•¨ìˆ˜
 	void Delay1();
-	//ÆĞ¸µ¿ë µô·¹ÀÌ ÇÔ¼ö
+	//íŒ¨ë§ìš© ë”œë ˆì´ í•¨ìˆ˜
 	void Delay2();
 
 
 public:
-	//Ä³¸¯ÅÍ µ¥¹ÌÁö º¯¼ö
+	//ìºë¦­í„° ë°ë¯¸ì§€ ë³€ìˆ˜
 	float CharacterDamage;
-	//Ä³¸¯ÅÍ Çà¿î º¯¼ö
+	//ìºë¦­í„° í–‰ìš´ ë³€ìˆ˜
 	float CharacterLuck;
-	//Ä³¸¯ÅÍ Åä±Ù º¯¼ö
+	//ìºë¦­í„° í† ê·¼ ë³€ìˆ˜
 	int CharacterToken;
-	//Ä³¸¯ÅÍ Á×À½ Ã¼Å©(Ã¼·Â 0 Ã¼Å©)
+	//ìºë¦­í„° ì£½ìŒ ì²´í¬(ì²´ë ¥ 0 ì²´í¬)
 	bool IsDead;
 
-	//HUD Å¬·¡½º °´Ã¼
+	//HUD í´ë˜ìŠ¤ ê°ì²´
 	UPROPERTY(EditAnywhere, Category = "Widget")
 	TSubclassOf<class UUserWidget> HUDWidgetClass;
-	//À§Á¬ Å¬·¡½º °´Ã¼
+	//ìœ„ì ¯ í´ë˜ìŠ¤ ê°ì²´
 	UPROPERTY(EditAnywhere, Category = "Widget")
 	class UABCharacterWidget* CurrentWidget;
 
+	//í˜„ì¬ ì¥ì°©í•˜ê³  ìˆëŠ” ë¬´ê¸° ë³€ìˆ˜
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
+	class AABWeapon* CurrentWeapon;
+
+	UPROPERTY(VIsibleAnywhere, Category = "Stat")
+	class UABCharacterStatComponent* CharacterStat;
+
 
 private:
-	//¾Ö´Ô Å¬·¡½º °´Ã¼
+	//ì• ë‹˜ í´ë˜ìŠ¤ ê°ì²´
 	UPROPERTY()
 	class UABAnimInstance* ABAnim;
-	//´åÁö Å¸ÀÌ¸Ó ÇÚµé·¯
+	//ë‹·ì§€ íƒ€ì´ë¨¸ í•¸ë“¤ëŸ¬
 	UPROPERTY()
 	FTimerHandle Dodge_Timer;
-	//ÆĞ¸µ Å¸ÀÌ¸Ó ÇÚµé·¯
+	//íŒ¨ë§ íƒ€ì´ë¨¸ í•¸ë“¤ëŸ¬
 	UPROPERTY()
 	FTimerHandle Parrying_Timer;
 
-	//°ø°İ Ã¼Å©
+	//ê³µê²© ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	bool IsAttacking;
-	//ÄŞº¸ °¡´É ¿©ºÎ Ã¼Å©
+	//ì½¤ë³´ ê°€ëŠ¥ ì—¬ë¶€ ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	bool CanNextCombo;
-	//ÄŞº¸ °¡´ÉÇÏµµ·Ï ÀÔ·ÂÀÌ µé¾î¿À´ÂÁö Ã¼Å©(Å¬¸¯ÀÌ ¿¬¼ÓÀ¸·Î µé¾î¿À´ÂÁö Ã¼Å©)
+	//ì½¤ë³´ ê°€ëŠ¥í•˜ë„ë¡ ì…ë ¥ì´ ë“¤ì–´ì˜¤ëŠ”ì§€ ì²´í¬(í´ë¦­ì´ ì—°ì†ìœ¼ë¡œ ë“¤ì–´ì˜¤ëŠ”ì§€ ì²´í¬)
 	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	bool IsComboInputOn;
-	//ÇöÀç ÄŞº¸ ¼ö
+	//í˜„ì¬ ì½¤ë³´ ìˆ˜
 	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	int32 CurrentCombo;
-	//ÃÖ´ë ÄŞº¸ ¼ö
+	//ìµœëŒ€ ì½¤ë³´ ìˆ˜
 	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	int32 MaxCombo;
 	
-	//´åÁö Ã¼Å©
+	//ë‹·ì§€ ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
 	bool IsDodge = false;
-	//´åÁö ½ºÇÇµå
+	//ë‹·ì§€ ìŠ¤í”¼ë“œ
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
 	float DodgeSpeed = 500.0f;
-	//´åÁö µô·¹ÀÌ À¯¹« Ã¼Å©
+	//ë‹·ì§€ ë”œë ˆì´ ìœ ë¬´ ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
 	bool DodgeDelay = false;
 	
-	//ÆĞ¸µ µ¿ÀÛ À¯¹« Ã¼Å©
+	//íŒ¨ë§ ë™ì‘ ìœ ë¬´ ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Parrying", Meta = (AllowPrivateAccess = true))
 	bool IsParrying = false;
-	//ÆĞ¸µ µô·¹ÀÌ À¯¹« Ã¼Å©
+	//íŒ¨ë§ ë”œë ˆì´ ìœ ë¬´ ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Parrying", Meta = (AllowPrivateAccess = true))
 	bool ParryingDelay = false;
 	
-	//Ä³¸¯ÅÍ °ø°İ Äİ¸®Àü ¹üÀ§(¾ÕµÚ)
+	//ìºë¦­í„° ê³µê²© ì½œë¦¬ì „ ë²”ìœ„(ì•ë’¤)
 	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	float AttackRange;
-	//Ä³¸¯ÅÍ °ø°İ Äİ¸®Àü ¹üÀ§(¾ç¿·)
+	//ìºë¦­í„° ê³µê²© ì½œë¦¬ì „ ë²”ìœ„(ì–‘ì˜†)
 	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	float AttackRadius;
 	
-	//¸Â¾Ò´ÂÁö À¯¹« Ã¼Å©
+	//ë§ì•˜ëŠ”ì§€ ìœ ë¬´ ì²´í¬
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Hit", Meta = (AllowPrivateAccess = true))
 	bool IsHit = false;
-	//ÃÖ´ë Ã¼·Â
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State", Meta = (AllowPrivateAccess = true))
+	//ìµœëŒ€ ì²´ë ¥
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
 	float MaxHealth;
-	//ÇöÀç Ã¼·Â
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "State", Meta = (AllowPrivateAccess = true))
+	//í˜„ì¬ ì²´ë ¥
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
 	float CurrentHealth;
-	//¸Â¾ÒÀ» ¶§ ÆÄÆ¼Å¬ È¿°ú
+	//ë§ì•˜ì„ ë•Œ íŒŒí‹°í´ íš¨ê³¼
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HitParticle", meta = (AllowPrivateAccess = true))
 	UParticleSystem* HitImpactP;
-};
 
+	int32 AssetIndex = 0;
+
+	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = State, Meta = (AllowprivateAccess = true))
+	ECharacterState CurrentState;
+
+
+public:
+	/**ì „ë°©ì˜ ë¬¸ì„ ê°ì§€*/
+	void DetectDoor();
+	/**Characterì˜ Parrying ìƒíƒœë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜ */
+	bool GetIsParrying();
+};

@@ -51,8 +51,10 @@ protected:
 		TArray<USkeletalMeshComponent*> OpacitySkeletalMesh;	//Opacity변경할 Meshes
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HitParticle", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FX", meta = (AllowPrivateAccess = true))
 	UParticleSystem* HitImpactP;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FX", meta = (AllowPrivateAccess = true))
+	class UNiagaraSystem* SparkN;
 	float MatOpacity;
 	bool IsDead;
 };

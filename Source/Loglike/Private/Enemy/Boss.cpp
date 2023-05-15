@@ -77,7 +77,7 @@ void ABoss::BeginPlay()
 
 	// Attack Test
 	// JumpAttack();
-	// RangedAttack();
+	//RangedAttack();
 }
 
 void ABoss::AttackStart()
@@ -219,7 +219,7 @@ void ABoss::RangedAttackStart()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Boss Ranged"));
 
-	// ÇÏµåÄÚµùÇÑ °Å ²À °íÄ¡ÀÚ ¿¹Áö³ª ,,
+	// ï¿½Ïµï¿½ï¿½Úµï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ,,
 	TSubclassOf<AProjectile> Rock_0 = StaticLoadClass(AProjectile::StaticClass(), NULL, TEXT("/Script/Engine.Blueprint'/Game/ParagonRampage/Blueprints/BP_BossProjectile.BP_BossProjectile_C'"));
 	TSubclassOf<AProjectile> Rock_1 = StaticLoadClass(AProjectile::StaticClass(), NULL, TEXT("/Script/Engine.Blueprint'/Game/ParagonRampage/Blueprints/BP_BossProjectile.BP_BossProjectile_C'"));
 	TSubclassOf<AProjectile> Rock_2 = StaticLoadClass(AProjectile::StaticClass(), NULL, TEXT("/Script/Engine.Blueprint'/Game/ParagonRampage/Blueprints/BP_BossProjectile.BP_BossProjectile_C'"));

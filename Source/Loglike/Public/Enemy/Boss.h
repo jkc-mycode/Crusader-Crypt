@@ -45,10 +45,10 @@ public:
 	TSubclassOf<class AProjectile> Projectile;
 
 private:
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Fist", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Fist", Meta = (AllowPrivateAccess = true))
 	class UBoxComponent* LeftBox;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Fist", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Fist", Meta = (AllowPrivateAccess = true))
 	class UBoxComponent* RightBox;
 
 private:

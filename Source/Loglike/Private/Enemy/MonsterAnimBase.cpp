@@ -46,7 +46,7 @@ void UMonsterAnimBase::PlayStunMontage()
 {
 	if (Montage_IsPlaying(AttackMontage))
 	{
-		Montage_Play(StunMontage);
+		Montage_Play(StunMontage,1.3f);
 	}
 }
 

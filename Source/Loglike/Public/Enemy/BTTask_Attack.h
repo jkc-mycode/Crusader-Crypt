@@ -17,7 +17,6 @@ class LOGLIKE_API UBTTask_Attack : public UBTTaskNode
 public:
 	UBTTask_Attack();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
 private:
 	class AMeleeMonsterBase* Monster;
 };

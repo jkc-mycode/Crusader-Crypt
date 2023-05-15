@@ -60,7 +60,6 @@ void AMonsterAIControllerBase::SetStun(bool enable, float sec)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("EndStun"));
 	}*/
-	
 	if (Blackboard != nullptr)
 	{
 		Blackboard->SetValueAsBool(IsStunKey, enable); 
