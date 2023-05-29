@@ -3,14 +3,20 @@
 
 #include "Enemy/BossAIController.h"
 #include "Enemy/Boss.h"
+#include "Enemy/BossAnimInstance.h"
+#include "Enemy/Projectile.h"
+
+
 #include "Character/LoglikeCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 const FName ABossAIController::CheckEntranceKey(TEXT("CheckEntrance"));
-const FName ABossAIController::CheckHPKey(TEXT("CheckHP"));
-const FName ABossAIController::SkilNumKey(TEXT("SkilNum"));
+const FName ABossAIController::ChargedAtkKey(TEXT("ChargedAtk"));
+const FName ABossAIController::RangedAtkKey(TEXT("RangedAtk"));
+const FName ABossAIController::JumpAtkKey(TEXT("JumpAtk"));
+const FName ABossAIController::CurrentHPKey(TEXT("CurrentHP"));
 
 ABossAIController::ABossAIController()
 {
@@ -23,12 +29,15 @@ ABossAIController::ABossAIController()
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Script/AIModule.BehaviorTree'/Game/ParagonRampage/AI/BT_Boss.BT_Boss'"));
 	if (BTObject.Succeeded())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Boss BT Is Succeded!!"));
 		BTAsset = BTObject.Object;
 	}
+	else UE_LOG(LogTemp, Warning, TEXT("Boss BT Is Fail"));
 }
 
 void ABossAIController::OnPossess(APawn* InPawn)
 {
+	UE_LOG(LogTemp, Warning, TEXT("BOSS AI OnPossess IS RUN"));
 	Super::OnPossess(InPawn);
 	ABoss* Boss = Cast<ABoss>(InPawn);
 	UBlackboardComponent* BlackboardComp = Blackboard.Get();
@@ -38,18 +47,17 @@ void ABossAIController::OnPossess(APawn* InPawn)
 	{
 		Blackboard->SetValueAsBool(IsDeadKey, false);
 		Blackboard->SetValueAsBool(IsStunKey, false);
-		Blackboard->SetValueAsBool(CheckEntranceKey, true);
-
-		Blackboard->SetValueAsInt(CheckHPKey, Boss->GetHitPoint());
-		Blackboard->SetValueAsInt(SkilNumKey, 0);
-
 		Blackboard->SetValueAsFloat(AttackTimeKey, Boss->GetAttackSpeed());
-
 		Blackboard->SetValueAsVector(HomePosKey, InPawn->GetActorLocation());
 		
-		
+		Blackboard->SetValueAsBool(CheckEntranceKey, false);
+		Blackboard->SetValueAsBool(ChargedAtkKey, true);
+		Blackboard->SetValueAsBool(RangedAtkKey, true);
+		Blackboard->SetValueAsBool(JumpAtkKey, true);
 
-		
+
+		Blackboard->SetValueAsFloat(CurrentHPKey, Boss->GetHitPoint());
+	
 		if (Player && Player->GetController()->IsPlayerController())
 		{
 			Blackboard->SetValueAsObject(TargetKey, Player);
@@ -60,20 +68,55 @@ void ABossAIController::OnPossess(APawn* InPawn)
 			UE_LOG(LogTemp, Warning, TEXT("%s BehaviorTree is not Run"), *(GetOwner()->GetName()));
 		}
 	}
+	AttackNum = 0;
+
 }
 
-void ABossAIController::PlayedStartEvent(bool Entrance)
+void ABossAIController::PlayedStartEvent(bool enable)
 {
-	Blackboard->SetValueAsBool(CheckEntranceKey, Entrance);
+	Blackboard->SetValueAsBool(CheckEntranceKey, enable);
 }
 
-
-void ABossAIController::SetHitPoint(int HitPoint)
+void ABossAIController::SetSkill(bool enable)
 {
-	Blackboard->SetValueAsInt(CheckHPKey, HitPoint);
+	//Blackboard->SetValueAsBool(PlaySkillKey, enable);
+	if (enable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SETSKILL IS TRUE"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SETSKILL IS FALSE"));
+	}
+
 }
 
-void ABossAIController::SetSkillPattern(int SkilNum)
+void ABossAIController::BossHitPoint(float HP)
 {
-	Blackboard->SetValueAsInt(SkilNumKey, SkilNum);
+	Blackboard->SetValueAsFloat(CurrentHPKey, HP);
+}
+
+void ABossAIController::SetEntranceKey(bool enable)
+{
+	Blackboard->SetValueAsBool(CheckEntranceKey, enable);
+}
+
+void ABossAIController::CountAttack()
+{
+	AttackNum++;
+	UE_LOG(LogTemp, Warning, TEXT("AttackNum: %d"), AttackNum);
+
+	if ((AttackNum % 5) == 0)
+	{
+		Blackboard->SetValueAsBool(JumpAtkKey, true);
+	}
+
+	if ((AttackNum % 4) == 0)
+	{
+		Blackboard->SetValueAsBool(ChargedAtkKey, true);
+	}
+	else if ((AttackNum % 7) == 0)
+	{
+		Blackboard->SetValueAsBool(RangedAtkKey, true);
+	}
 }

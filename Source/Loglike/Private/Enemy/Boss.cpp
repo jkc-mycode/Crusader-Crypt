@@ -3,15 +3,17 @@
 
 #include "Enemy/Boss.h"
 #include "Enemy/BossAnimInstance.h"
-#include "Enemy/MonsterAIControllerBase.h"
 #include "Enemy/BossAIController.h"
-#include "Enemy/MeleeMonsterAIController.h"
 #include "Enemy/Projectile.h"
+
+#include "UI/BossHPBar.h"
+#include "Blueprint/UserWidget.h"
 
 #include "Character/LoglikeCharacter.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 
 #include "Engine/DamageEvents.h"
 
@@ -33,6 +35,12 @@ ABoss::ABoss()
 		GetMesh()->SetAnimInstanceClass(AB_BOSS.Class);
 	}
 
+	static ConstructorHelpers::FClassFinder<UUserWidget> HPBAR(TEXT("/Game/ParagonRampage/Blueprints/UI_BossHPBar.UI_BossHPBar_C"));
+	if (HPBAR.Succeeded())
+	{
+		BossHpWidgetClass = HPBAR.Class;
+	}
+
 	//BoxComponent
 	LeftBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftFistBox"));
 	RightBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightFistBox"));
@@ -43,7 +51,7 @@ ABoss::ABoss()
 	RightBox->SetCollisionProfileName(TEXT("OverlapAll"));
 
 	// init
-	HealthPoint = 50.f;  // temp stat (400.f)
+	HealthPoint = 500.f;  // temp stat (400.f)
 	MovementSpeed = 400.f;
 	AttackSpeed = 2.f;
 
@@ -54,9 +62,11 @@ ABoss::ABoss()
 	JumpAttackDamage = 10.f;
 	AttackDamageMin = 3.f;
 	AttackDamageMax = 5.f;
+	IsAttacking = false;
+
 
 	// AI
-	// AIControllerClass = ABossAIController::StaticClass();
+	AIControllerClass = ABossAIController::StaticClass();
 }
 
 void ABoss::PostInitializeComponents()
@@ -70,6 +80,8 @@ void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CheckHP = HealthPoint;
+
 	//MeleeAttackInit
 	LeftBox->OnComponentBeginOverlap.AddDynamic(this, &AMonsterBase::OnOverlapBegin);
 	RightBox->OnComponentBeginOverlap.AddDynamic(this, &AMonsterBase::OnOverlapBegin);
@@ -77,7 +89,56 @@ void ABoss::BeginPlay()
 
 	// Attack Test
 	// JumpAttack();
-	// RangedAttack();
+	//RangedAttack();
+	// Attack();
+}
+
+void ABoss::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("Boss Actor : %s HP : %f"), *GetName(), HealthPoint);
+
+	if (HealthPoint <= 0)
+	{
+		BossHpWidget->RemoveFromViewport();
+	}
+	if (HealthPoint < CheckHP)
+	{
+		CheckHitPoint();
+		BossHpWidget->UpdateHPWidget(HealthPoint);
+		CheckHP = HealthPoint;
+	}
+}
+
+void ABoss::SetHPbar()
+{
+	if (BossHpWidgetClass != nullptr)
+	{
+		BossHpWidget = Cast<UBossHPBar>(CreateWidget(GetWorld(), BossHpWidgetClass));
+
+		if (BossHpWidget != nullptr)
+		{
+			BossHpWidget->AddToViewport();
+		}
+	}
+}
+
+void ABoss::Stun()
+{
+	PushBack(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	Cast<ABossAIController>(GetController())->SetStun(true, 10.f);
+	Cast<UBossAnimInstance>(MonsterAnim)->PlayStunMontage();
+}
+
+void ABoss::PushBack(AActor* PivotActor)
+{
+	FVector DamageDirection = PivotActor->GetActorLocation() - GetActorLocation();
+	DamageDirection.Z = 0.f;
+	DamageDirection.Normalize();
+	DamageDirection *= -1;
+
+	LaunchCharacter(DamageDirection * 1200.f, true, true);
 }
 
 void ABoss::AttackStart()
@@ -94,6 +155,8 @@ void ABoss::AttackEnd()
 
 void ABoss::Attack()
 {
+	IsAttacking = true;
+
 	Damage = FMath::RandRange(AttackDamageMin, AttackDamageMax);
 	Cast<UBossAnimInstance>(MonsterAnim)->PlayComboAttackMontage(ComboNum);
 	ComboNum++;
@@ -134,22 +197,22 @@ void ABoss::ChargedAttackStart(int32 FistIndex)
 	bool bResult = GetWorld()->SweepSingleByChannel(
 		HitResult,
 		FistLoc,
-		FistLoc+ 50.f,
+		FistLoc + 120.f,
 		FQuat::Identity,
 		ECollisionChannel::ECC_GameTraceChannel1,
-		FCollisionShape::MakeSphere(50.f),
+		FCollisionShape::MakeSphere(120.f),
 		Params
 	);
-	
+
 	FColor DrawColor = bResult ? FColor::Green : FColor::Red;
 	DrawDebugCapsule(
-		GetWorld(), 
+		GetWorld(),
 		FistLoc,
-		50.f,
-		50.f,
+		120.f,
+		120.f,
 		FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(),
-		DrawColor, 
-		false, 
+		DrawColor,
+		false,
 		3.f);
 	if (bResult)
 	{
@@ -182,7 +245,7 @@ void ABoss::JumpAttackStart()
 
 void ABoss::JumpAttackEnd()
 {
-	FVector TargetLoc = GetMesh()->GetSocketLocation(FName("LeftFist"))+GetActorRightVector()*75.f;
+	FVector TargetLoc = GetMesh()->GetSocketLocation(FName("LeftFist")) + GetActorRightVector() * 75.f;
 	FHitResult HitResult;
 	FCollisionQueryParams Params(NAME_None, false, this);
 	bool bResult = GetWorld()->SweepSingleByChannel(
@@ -215,11 +278,27 @@ void ABoss::JumpAttackEnd()
 	}
 }
 
+void ABoss::SpawnEnemies()
+{
+	TArray<TSubclassOf<AMonsterBase>> SelectedEnemy;
+
+	while (SelectedEnemy.Num() < 3)
+	{
+		TSubclassOf<AMonsterBase> RandomEnemyClass = Enemies[FMath::RandRange(0, Enemies.Num() - 1)];
+		if (!SelectedEnemy.Contains(RandomEnemyClass))
+		{
+			SelectedEnemy.Add(RandomEnemyClass);
+			AMonsterBase* SpawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(RandomEnemyClass, FVector::ZeroVector, FRotator::ZeroRotator);
+			if (SpawnedEnemy)
+			{
+				SpawnedEnemies.Add(SpawnedEnemy);
+			}
+		}
+	}
+}
+
 void ABoss::RangedAttackStart()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Boss Ranged"));
-
-	// ÇÏµåÄÚµùÇÑ °Å ²À °íÄ¡ÀÚ ¿¹Áö³ª ,,
 	TSubclassOf<AProjectile> Rock_0 = StaticLoadClass(AProjectile::StaticClass(), NULL, TEXT("/Script/Engine.Blueprint'/Game/ParagonRampage/Blueprints/BP_BossProjectile.BP_BossProjectile_C'"));
 	TSubclassOf<AProjectile> Rock_1 = StaticLoadClass(AProjectile::StaticClass(), NULL, TEXT("/Script/Engine.Blueprint'/Game/ParagonRampage/Blueprints/BP_BossProjectile.BP_BossProjectile_C'"));
 	TSubclassOf<AProjectile> Rock_2 = StaticLoadClass(AProjectile::StaticClass(), NULL, TEXT("/Script/Engine.Blueprint'/Game/ParagonRampage/Blueprints/BP_BossProjectile.BP_BossProjectile_C'"));
@@ -251,7 +330,7 @@ void ABoss::RangedAttackStart()
 				{
 					World->SpawnActor<AProjectile>(Rock, SpawnLocation, FRotator(0.f, SpawnRotation.Yaw - (dist * index++), 0.f));
 				}
-				
+
 			}
 		}
 	}
@@ -260,9 +339,51 @@ void ABoss::RangedAttackStart()
 void ABoss::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	//Attack test
-	
-	/*if (Montage->GetName().Contains("Attack"))
+	if (!Montage->GetName().Contains("_Attack"))
 	{
-		ChargedAttack();
-	}*/
+		ComboNum = 0;
+	}
+
+	if (Montage->GetName().Contains("Hit"))
+	{
+		Cast<ABossAIController>(GetController())->SetPain(false, 0.f);
+	}
+	else if (Montage->GetName().Contains("Stun"))
+	{
+		Cast<ABossAIController>(GetController())->SetStun(false, 0.f);
+	}
+
+	if (Montage->GetName().Contains("_Attack"))// Attack Montage í›„ BTì‹¤í–‰ê°€ëŠ¥
+	{
+		IsAttacking = false;
+	}
+	else if (Montage->GetName().Contains("Charged"))
+	{
+		ChargedAttackIsEnded.Broadcast();
+	}
+	else if (Montage->GetName().Contains("Jump"))
+	{
+		JumpAttackIsEnded.Broadcast();
+	}
+	else if (Montage->GetName().Contains("Ranged"))
+	{
+		RangedAttackIsEnded.Broadcast();
+	}
+
+	AttackEnd();
+}
+
+void ABoss::CheckHitPoint()
+{
+	Cast<ABossAIController>(GetController())->BossHitPoint(HealthPoint);
+}
+
+void ABoss::ReadyToSkill(bool enable)
+{
+	Cast<ABossAIController>(GetController())->SetSkill(enable);
+}
+
+void ABoss::AttackCount()
+{
+	Cast<ABossAIController>(GetController())->CountAttack();
 }
