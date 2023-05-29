@@ -17,10 +17,17 @@ public:
 	AMeleeMonsterBase();
 	virtual void PostInitializeComponents() override;
 	virtual void Tick(float DeltaTime) override;
+	/**근거리몬스터의 근접공격을 담당하는 함수*/
 	void ComboAttack();
+	/**PivotActor To 몬스터 방향으로 튕겨져 나가는 함수*/
+	void PushBack(AActor* PivotActor);
+	/**스턴상태의 montage를 실행하고 BT의 상태를 Stun으로 돌림*/
 	void Stun();
 	UFUNCTION()
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	bool GetIsAttacking() { return IsAttacking; }
 private:
 	int32 ComboNum;
+	bool IsAttacking;
 };

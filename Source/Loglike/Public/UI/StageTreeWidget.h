@@ -19,7 +19,13 @@ public:
 	void UpdateTree();
 	void SelectNode(class UStageNodeWidget* NodeWidget);
 	void FadeAnimationPlay(bool IsIn);
-	void TransformStage();
+	void TransformStage(bool IsBossStage);
+
+public:
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "NextStage")
+	TArray<class UStageNodeWidget*> StageTree;
+	TArray<TTuple<int32, int32>> TreeConnection;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "NextStage")
 
 public:
 	TArray<class UStageNodeWidget*> StageTree;

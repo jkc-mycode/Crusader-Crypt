@@ -13,6 +13,14 @@ class ALoglikeGameMode : public AGameModeBase
 
 public:
 	ALoglikeGameMode();
+	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+private:
+	UPROPERTY()
+	class AABGameState* ABGameState;
 };
 
 

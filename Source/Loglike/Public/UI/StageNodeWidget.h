@@ -26,6 +26,21 @@ enum class EStageType : uint8
 	E_Health = 2 UMETA(DisplayName = "Health"),
 	E_Stat = 3 UMETA(DisplayName = "Stat"),
 	E_Weapon = 4 UMETA(DisplayName = "Weapon"), 
+	E_None = 254 UMETA(DisplayName = "None"),
+};
+
+USTRUCT(Atomic, BlueprintType)
+struct FStageNodeVisual
+{
+    GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool EnableBtn;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float EnableStageBorderOpacity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float SelectedStageBorderOpacity;
+};
 	E_None = 255 UMETA(DisplayName = "None"),
 };
 
@@ -48,6 +63,16 @@ public:
 	class UImage* StageImage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UImage* StageBorder;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UImage* SelectedStageBorder;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UImage* EnableStageBorder;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EStageType NodeStateType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UTexture2D*> NodeImageArr;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EStageType NodeStateType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

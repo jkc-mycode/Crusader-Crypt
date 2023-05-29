@@ -8,6 +8,10 @@
 ULoglikeGameInstance::ULoglikeGameInstance()
 {
     CurrentStageType = EStageType::E_None;
+
+    FString CharacterDataPath = TEXT("/Script/Engine.DataTable'/Game/Source/CharacterData/ABCharacterData123.ABCharacterData123'");
+    static ConstructorHelpers::FObjectFinder<UDataTable> DT_ABCHARACTER(*CharacterDataPath);
+    ABCharacterTable = DT_ABCHARACTER.Object;
 }
 
 void ULoglikeGameInstance::Init()
@@ -30,3 +34,9 @@ void ULoglikeGameInstance::InitSelectedArr()
 {
     SelectedNodeArr.Empty();
 }
+
+FABCharacterData* ULoglikeGameInstance::GetABCharacterData(int32 Name)
+{
+    return ABCharacterTable->FindRow<FABCharacterData>(*FString::FromInt(Name), TEXT(""));
+}
+

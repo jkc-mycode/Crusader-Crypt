@@ -22,7 +22,6 @@ void UMeleeAnimInstance::AnimNotify_AttackStart()
 	AMonsterBase* Monster = Cast<AMonsterBase>(TryGetPawnOwner());
 	if (::IsValid(Monster))
 	{
-		UE_LOG(LogTemp, Log, TEXT("AttackStart"));
 		Monster->AttackStart();
 	}
 }
@@ -32,7 +31,6 @@ void UMeleeAnimInstance::AnimNotify_AttackEnd()
 	AMonsterBase* Monster = Cast<AMonsterBase>(TryGetPawnOwner());
 	if (::IsValid(Monster))
 	{
-		UE_LOG(LogTemp, Log, TEXT("AttackEnd"));
 		Monster->AttackEnd();
 	}
 }

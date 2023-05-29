@@ -23,11 +23,11 @@ void UABCharacterWidget::NativeConstruct()
 	//UpdateHPWidget();
 }
 
-//HP 위젯 업데이트 함수
+//HP 위젯 업데이트 함수 (흠 어쩔까...)
 void UABCharacterWidget::UpdateHPWidget()
 {
-	if (CurrentCharacter->IsValidLowLevel())
-		if (nullptr != HPProgressBar)
-			//연결된 프로그래스바에 SetPercent 함수로 게이지를 변경
-			HPProgressBar->SetPercent(1 - CurrentCharacter->GetHPRatio());
+	//if (CurrentCharacter->IsValidLowLevel())
+	//	if (nullptr != HPProgressBar)
+	//		//연결된 프로그래스바에 SetPercent 함수로 게이지를 변경
+	//		HPProgressBar->SetPercent(1 - CurrentCharacter->GetHPRatio());
 }

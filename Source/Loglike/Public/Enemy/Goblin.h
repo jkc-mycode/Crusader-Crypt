@@ -25,6 +25,4 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Fist", Meta = (AllowPrivateAccess = true))
 		class UBoxComponent* RightBox;
 
-	UPROPERTY()
-		class UMonsterAnimBase* ABAnim;
 };
