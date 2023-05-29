@@ -6,7 +6,6 @@
 #include "GameFramework/Character.h"
 #include "MonsterBase.generated.h"
 
-
 UCLASS()
 class LOGLIKE_API AMonsterBase : public ACharacter
 {
@@ -40,6 +39,7 @@ public:
 	void ChangeOpacity(float DeltaTime);
 	UFUNCTION() /**해당 몬스터의 공격이 성공할 때 실행됩니다.*/
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 protected:
 	float HealthPoint;
 	float Damage;
@@ -51,8 +51,10 @@ protected:
 		TArray<USkeletalMeshComponent*> OpacitySkeletalMesh;	//Opacity변경할 Meshes
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HitParticle", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FX", meta = (AllowPrivateAccess = true))
 	UParticleSystem* HitImpactP;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FX", meta = (AllowPrivateAccess = true))
+	class UNiagaraSystem* SparkN;
 	float MatOpacity;
 	bool IsDead;
 };

@@ -2,16 +2,25 @@
 
 
 #include "Enemy/MonsterBase.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/BoxComponent.h"
-#include "Engine/DamageEvents.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Character/LoglikeCharacter.h"
 #include "Enemy/MonsterAnimBase.h"
 #include "Enemy/MonsterAIControllerBase.h"
+#include "Enemy/MeleeMonsterBase.h"
+#include "Enemy/Boss.h"
+
+#include "Character/LoglikeCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "DungeonGameMode.h"
+
+#include "Engine/DamageEvents.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Particles/ParticleSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 // Sets default values
 AMonsterBase::AMonsterBase()
 {
@@ -23,6 +32,12 @@ AMonsterBase::AMonsterBase()
 	{
 		HitImpactP = HitImpactParticle.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> SparkNiagara(TEXT("/Script/Niagara.NiagaraSystem'/Game/UndeadPack/Blood/SparkFX/NE_Sparkle_System.NE_Sparkle_System'"));
+	if (SparkNiagara.Succeeded())
+	{
+		SparkN = SparkNiagara.Object;
+	}
+	
 	//체력
 	HealthPoint = 1.f;
 	//Mesh불투명도 관련 변수
@@ -41,8 +56,7 @@ void AMonsterBase::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 	GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
-	GetCharacterMovement()->bUseRVOAvoidance = true;
-	GetCharacterMovement()->AvoidanceConsiderationRadius = 200.f;
+
 	MonsterAnim = Cast<UMonsterAnimBase>(GetMesh()->GetAnimInstance());
 	//Opacity 변경할 Meshes
 	OpacitySkeletalMesh.Add(GetMesh());
@@ -91,13 +105,17 @@ float AMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	Cast<AMonsterAIControllerBase>(GetController())->SetPain(true, 10.f);
 	MonsterAnim->PlayPainMontage();
 	
-
 	return FinalDamage;
 }
 
 void AMonsterBase::Dead()
 {
 	//AI,Animation 죽음처리& Collision 비활성화
+	if (Cast<ADungeonGameMode>(UGameplayStatics::GetGameMode(GetWorld())) != nullptr)
+	{
+		Cast<ADungeonGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->UpdateMonsterNum();
+	}
+	
 	Cast<AMonsterAIControllerBase>(GetController())->SetDead();
 	MonsterAnim->SetDead();
 	SetActorEnableCollision(false);
@@ -128,10 +146,17 @@ void AMonsterBase::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, cla
 	if (OtherActor && Cast<ALoglikeCharacter>(OtherActor) && OtherComp)
 	{
 		ALoglikeCharacter* LoglikeCharacter = Cast<ALoglikeCharacter>(OtherActor);
-		if (false/*LoglikeCharacter->IsBlock*/)
+		if (LoglikeCharacter->GetIsParrying())
 		{
-			Cast<AMonsterAIControllerBase>(GetController())->SetStun(true, 10.f);
-			MonsterAnim->PlayStunMontage();
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SparkN, GetActorLocation(), GetActorRotation());
+			if (Cast<AMeleeMonsterBase>(this))
+			{
+				Cast<AMeleeMonsterBase>(this)->Stun();
+			}
+			if (Cast<ABoss>(this))
+			{
+				Cast<ABoss>(this)->Stun();
+			}
 		}
 		else
 		{

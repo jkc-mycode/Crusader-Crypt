@@ -18,12 +18,20 @@ public:
 	ABossAIController();
 	virtual void OnPossess(APawn* InPawn) override;
 
-	void PlayedStartEvent(bool Entrance);
-	void SetHitPoint(int HitPoint);
-	void SetSkillPattern(int SkilNum);
+	void PlayedStartEvent(bool enable);
+	void SetSkill(bool enable);
+	void SetEntranceKey(bool enable);
+	void BossHitPoint(float HP);
+	void CountAttack();
 
 public:
 	static const FName CheckEntranceKey;
-	static const FName CheckHPKey;
-	static const FName SkilNumKey;
+	static const FName CurrentHPKey;
+	static const FName ChargedAtkKey;
+	static const FName RangedAtkKey;
+	static const FName JumpAtkKey;
+
+
+private:
+	int AttackNum;
 };
