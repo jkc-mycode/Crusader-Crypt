@@ -39,3 +39,4 @@ FABCharacterData* ULoglikeGameInstance::GetABCharacterData(int32 Name)
 {
     return ABCharacterTable->FindRow<FABCharacterData>(*FString::FromInt(Name), TEXT(""));
 }
+

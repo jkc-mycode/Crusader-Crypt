@@ -5,6 +5,9 @@
 #include "Enemy/MonsterAnimBase.h"
 #include "Enemy/MonsterAIControllerBase.h"
 #include "Enemy/MeleeMonsterBase.h"
+
+#include "Enemy/Boss.h"
+
 #include "Character/LoglikeCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DungeonGameMode.h"
@@ -18,6 +21,8 @@
 #include "Particles/ParticleSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+
+
 // Sets default values
 AMonsterBase::AMonsterBase()
 {
@@ -102,7 +107,6 @@ float AMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	Cast<AMonsterAIControllerBase>(GetController())->SetPain(true, 10.f);
 	MonsterAnim->PlayPainMontage();
 	
-
 	return FinalDamage;
 }
 
@@ -150,6 +154,10 @@ void AMonsterBase::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, cla
 			if (Cast<AMeleeMonsterBase>(this))
 			{
 				Cast<AMeleeMonsterBase>(this)->Stun();
+			}
+			if (Cast<ABoss>(this))
+			{
+				Cast<ABoss>(this)->Stun();
 			}
 		}
 		else

@@ -26,6 +26,11 @@ public:
 	TArray<class UStageNodeWidget*> StageTree;
 	TArray<TTuple<int32, int32>> TreeConnection;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "NextStage")
+
+public:
+	TArray<class UStageNodeWidget*> StageTree;
+	TArray<int32> TreeLoad;
+	TArray<TTuple<int32, int32>> TreeConnection;
 	TMap<class UStageNodeWidget*, int32> NodeNumMap;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 		class UWidgetAnimation* Fade;

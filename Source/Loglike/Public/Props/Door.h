@@ -29,6 +29,7 @@ public:
 	void ShowNextStageWidget();
 	UFUNCTION()
 	void OnStageClear();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* DoorL;
@@ -44,4 +45,5 @@ private:
 	class ADungeonGameMode* GameMode;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool IsStageClear;
+
 };

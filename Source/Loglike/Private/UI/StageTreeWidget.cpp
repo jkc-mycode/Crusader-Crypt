@@ -1,6 +1,3 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "UI/StageTreeWidget.h"
 #include "UI/StageNodeWidget.h"
 #include "GameFramework/LoglikeGameInstance.h"
@@ -97,6 +94,10 @@ void UStageTreeWidget::SelectNode(UStageNodeWidget* NodeWidget)
 	Cast<ULoglikeGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->AddSelectedNode(Num);	//Add Node
 	Cast<ULoglikeGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->CurrentStageType = NodeWidget->NodeStateType;
 	TransformStage(NodeWidget->NodeStateType == EStageType::E_Boss);	//Transform Stage
+
+	TransformStage();	//Transform Stage
+	//TreeLoad.AddUnique(Num);
+
 }
 
 
@@ -125,4 +126,12 @@ void UStageTreeWidget::TransformStage(bool IsBossStage)
 	FName DungeonName = FName(*FString::Printf(TEXT("Dungeon-%d"), RandomStageNum));
 	UGameplayStatics::OpenLevel(this, DungeonName);
 	
+
+void UStageTreeWidget::TransformStage()
+{
+	int8 RandomStageNum = FMath::RandRange(1, 4);
+	//FName DungeonName = FName(*FString::Printf(TEXT("Dungeon-%d"), RandomStageNum));
+	//UGameplayStatics::OpenLevel(this, DungeonName);
+	UGameplayStatics::OpenLevel(this, FName("MonsterTestLevel"));	//TestCode
+
 }

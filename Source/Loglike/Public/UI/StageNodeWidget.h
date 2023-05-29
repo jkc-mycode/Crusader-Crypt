@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float SelectedStageBorderOpacity;
 };
+	E_None = 255 UMETA(DisplayName = "None"),
+};
+
 UCLASS()
 class LOGLIKE_API UStageNodeWidget : public UUserWidget
 {
@@ -71,6 +74,10 @@ public:
 	TArray<UTexture2D*> NodeImageArr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EStageType NodeStateType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UTexture2D*> NodeImageArr;
+		//UTexture2D* StageTextrue;
 	class UButton* StageBtn;
 public:
 	UPROPERTY()
